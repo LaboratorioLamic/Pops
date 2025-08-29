@@ -430,8 +430,16 @@
             { title: "POP 309~329 - LEI GERAL DE PROTEÇÃO DE DADOS (LGPD)", sector: "LGPD", link: "https://drive.google.com/drive/folders/1UBfXzCXUqgriHBQDJAf0ZDHNz_bAHBye", forms: [] },
         ];
 
-        // Initialize favorites from localStorage
-        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        // Initialize favorites from localStorage (namespaced to avoid cross-site duplication)
+        const FAVORITES_KEY = 'lamic_pops_favorites_v1';
+        let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        if (!favorites.length) {
+            const legacyFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            if (legacyFavorites.length) {
+                favorites = legacyFavorites;
+                localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+            }
+        }
         let selectedSector = '';
         let showFavorites = false;
 
@@ -495,7 +503,7 @@
             } else {
                 favorites.push(index);
             }
-            localStorage.setItem('favorites', JSON.stringify(favorites));
+            localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
             updateCards();
         }
 
