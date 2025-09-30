@@ -19,12 +19,12 @@
         .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             position: relative;
-            z-index: 1; /* Lower z-index for cards */
+            z-index: 1;
         }
         .card:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
-            z-index: 2; /* Slightly higher on hover, but still below dropdowns */
+            z-index: 2;
         }
         .search-bar {
             max-width: 600px;
@@ -38,9 +38,9 @@
             background-color: #ffffff;
             min-width: 160px;
             box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
-            z-index: 10; /* Sector dropdown above cards */
-            max-height: 200px; /* Approximate height for 5 items */
-            overflow-y: auto; /* Enable scrollbar for overflow */
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
         }
         .dropdown:hover .dropdown-content {
             display: block;
@@ -54,12 +54,12 @@
             background-color: #ffffff;
             min-width: 200px;
             box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
-            z-index: 30; /* Higher z-index to ensure form dropdown is above all cards */
-            top: 100%; /* Position below the button */
+            z-index: 30;
+            top: 100%;
             left: 0;
-            padding-top: 4px; /* Small padding to prevent clipping */
-            max-height: 200px; /* Approximate height for 5 items */
-            overflow-y: auto; /* Enable scrollbar for overflow */
+            padding-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
         }
         .form-dropdown:hover .form-dropdown-content {
             display: block;
@@ -151,7 +151,6 @@
         .star:not(.favorited) {
             color: #d1d5db;
         }
-        /* Fullscreen overlay for embedded document */
         #docOverlay {
             position: fixed;
             top: 0;
@@ -164,7 +163,7 @@
             flex-direction: column;
         }
         #docTopBar {
-            background-color: #1e3a8a; /* navy-blue */
+            background-color: #1e3a8a;
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -210,7 +209,7 @@
         <div class="container mx-auto flex items-center justify-between px-4">
             <div class="flex items-center space-x-4">
                 <img src="https://i.imgur.com/P13sT7A.png" alt="LAMIC Logo" class="h-12 w-auto object-contain">
-                <h1 class="text-3xl font-bold title-font"></h1>
+                <h1 class="text-3xl font-bold title-font">Acervo de POPs LAMIC</h1>
             </div>
             <nav class="flex space-x-2">
             </nav>
@@ -226,14 +225,12 @@
                 </button>
                 <div id="sectorDropdown" class="dropdown-content rounded-lg">
                     <a href="#" class="block px-4 py-2 bg-blue-100 hover:bg-blue-200" onclick="filterBySector('')">Todos</a>
-                    <!-- POPs serão adicionados dinamicamente aqui -->
                 </div>
             </div>
             <button id="favoriteFilter" class="p-3 favorite-button" onclick="filterByFavorites()">Favoritos</button>
         </div>
 
         <div id="spreadsheetList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Cards serão adicionados dinamicamente aqui -->
         </div>
     </main>
 
@@ -243,7 +240,6 @@
         </div>
     </footer>
 
-    <!-- Fullscreen Embedded Document Overlay -->
     <div id="docOverlay">
         <div id="docTopBar">
             <div class="topbar-left">
@@ -266,13 +262,22 @@
         <iframe id="docFrame" referrerpolicy="no-referrer-when-downgrade" allow="clipboard-write; fullscreen"></iframe>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="text/javascript">
+        const FAVORITES_KEY = 'lamic_pops_favorites_v1';
+        let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
+        let spreadsheets = [];
+        let selectedSector = '';
+        let showFavorites = false;
+
         var gk_isXlsx = false;
         var gk_xlsxFileLookup = {};
         var gk_fileData = {};
+
         function filledCell(cell) {
             return cell !== '' && cell != null;
         }
+
         function loadFileData(filename) {
             if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
                 try {
@@ -298,240 +303,94 @@
             return gk_fileData[filename] || "";
         }
 
-        let spreadsheets = [
-        { title: "POP 08 - ATENDIMENTO AO PACIENTE - RECEPÇÃO", sector: "Atendimento", link: "https://docs.google.com/document/d/1cuhXUqL5tXTa3unoPPo1iehELPV-A-Q-/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 269 - CONTATO COM PACIENTESs", sector: "Atendimento", link: "https://docs.google.com/document/d/1cmlkMvUS5lY35rNqsF8DZX5HtVIMFf2H/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 277 - ATENDIMENTO DE VOUCHER DE DESCONTOS E DE GRATUIDADES", sector: "Atendimento", link: "https://docs.google.com/document/d/1-DQRG3CnNWWe_CTtzOfZHRNEyaNkhmVi/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 278 - COMUNICADOS E AVISOS ENTRE COLABORADORES", sector: "Atendimento", link: "https://docs.google.com/document/d/1AquZvLvPQXnnIN-hjqIv2NG1Upq8hsIi/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 297 - COMUNICAÇÃO DE PENDENCIAS", sector: "Atendimento", link: "https://docs.google.com/document/d/1u5mzdcCJvodee9hSgjjiMi9G_O_tE0_5/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 298 - ATENDIMENTO AO CLIENTE DO LAMIC VACINAS", sector: "Atendimento", link: "https://docs.google.com/document/d/1p3bliY-Nafm0nQQo-mslEPJtu_QEBxGx/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 299 - ROTINA PARA EXAMES QUE O LAMIC NÃO AUTORIZA POR PLANO DE SAÚDE", sector: "Atendimento", link: "https://docs.google.com/document/d/11to12D0z8OFjOAMmXtMsExHIKYMSeFAb/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 300 - ROTINA DE SÁBADO PARA EXAMES REALIZADOS NO DEPARTAMENTO DE BIOMOL", sector: "Atendimento", link: "https://docs.google.com/document/d/1TVFDMqIJRJhTY9OE1lQ8m6dTGGm0rZfN/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 301 - ATENDIMENTO A PACIENTES TRANSGÊNERO", sector: "Atendimento", link: "https://docs.google.com/document/d/1Negl-xlASTSspq37kWr6lhrkUBEvKqiZ/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 303 - MARKETING", sector: "Atendimento", link: "https://docs.google.com/document/d/1AKf-GV8GalTgeDGu48rLeq6bpK-wu80n/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 305 - ATENDIMENTO DO CANAL DO CLIENTE", sector: "Atendimento", link: "https://docs.google.com/document/d/1AlMvwqm7GNXlWCIpyA7eF-kOusG4yOtx/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 308 - AUTORIZAÇÃO POR PLANOS DE SAÚDE", sector: "Atendimento", link: "https://docs.google.com/document/d/1wy3h7SgZa6v-Pr_pMTELlxIPL1ZCJDlnZ5Tj0EYI8hQ/edit?usp=drive_link", forms: [] },
-            { title: "POP 336 - CADASTRO DE TESTES DO HIDROGÊNIO EXPIRADO", sector: "Atendimento", link: "https://docs.google.com/document/d/1t49bnlkG7kgatt2xM1OleE41QN9Fz4Rv0ngnT5CMjwM/edit?usp=drive_link", forms: [] },
-            { title: "POP 340 - ORIENTAÇÕES PARA O TESTE RESPIRATÓRIO DE HIDROGÊNIO EXPIRADO", sector: "Atendimento", link: "https://docs.google.com/document/d/1ePM6fB3ghPMLGDDA1ZDVg307562r4BeeA56yttaWUrQ/edit?usp=drive_link", forms: [] },
-            { title: "POP 341 - ANEXOS DE DOCUMENTOS NO SISTEMA UNILAB", sector: "Atendimento", link: "https://docs.google.com/document/d/1o1ivxbbzYw7WQP_qA3rFEO46qK6flORXJrmZPY1JV68/edit?usp=drive_link", forms: [] },
-            { title: "POP 10 - COLETA SANGUINEA", sector: "Coleta", link: "https://docs.google.com/document/d/1Ly-fgNnR-EIO1S4-WHOCDkSGaViLfVTP/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 11 - ROTINA DE COLETA PARA O TESTE DO PEZINHO", sector: "Coleta", link: "https://docs.google.com/document/d/17HGsU7KFHVIyyJW00KxepRqvbgs79_aS/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 12 - COLETA SANGUINEA - TESTE ORAL DE TOLERANCIA À GLICOSE (TOTG)", sector: "Coleta", link: "https://docs.google.com/document/d/1WiSCJ3D7N65-qOklYbVqSR_16RRX8fCK/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 13 - COLETA SANGUÍNEA – TESTE ORAL DE TOLERÂNCIA A GLICOSE (TOTG) COM CURVA GLICEMICA", sector: "Coleta", link: "https://docs.google.com/document/d/1k9xeauZWNx0Erwiug2ZofckHB0srun8s/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 14 - COLETA SANGUÍNEA – TESTE DE TOLERÂNCIA A LACTOSE (TTL)", sector: "Coleta", link: "https://docs.google.com/document/d/1CMGGTpkhj-o0WAttt-hErraSuhSVA5x5/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 15 - GLICEMIA PÓS-PRANDIAL (GPP)", sector: "Coleta", link: "", forms: [] },
-            { title: "POP 16 - TESTE DE ESTÍMULO COM ACTH PARA AVALIAÇÃO DE RESERVA DE GLOCICORTICÓIDE. (TESTE DE CORTROSINA)", sector: "Coleta", link: "https://docs.google.com/document/d/1bPZ-psFBVYx6qHBv1Kc1jgKn6i90wkFc/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 17 - COLETA TESTE DO HIDROGÊNIO EXPIRADO (TESTE REPIRATÓRIO)", sector: "Coleta", link: "https://docs.google.com/document/d/1vTnfPDGW5fVD7TSN3bhFukoYncn2B7Z0/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 18 - COLETA SANGUÍNEA - TEMPO DE SANGRIA (TS)", sector: "Coleta", link: "https://docs.google.com/document/d/1-LSpka8JFDxFKx0BDU5eAi5zSwU6yKZj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 19 - COLETA SANGUÍNEA – TEMPO DE COAGULAÇÃO (TC)", sector: "Coleta", link: "https://docs.google.com/document/d/19wKPqLCy0nrsRbaLDkjkcZ8wFfjJ9FCn/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 20 - PROCESSAMENTO DA AMOSTRA DE METAIS PESADOS", sector: "Coleta", link: "https://docs.google.com/document/d/15wSlphhGYMqArxwnRuVLy6uDBg3JBvFB/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 21 - ROTINA DE COLETA PARA EXAME TOXICOLÓGICO", sector: "Coleta", link: "https://docs.google.com/document/d/1JFoQHDwJc5wozzZDnzarTujlGRwQ2UPg/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 22 - COLETA DE SECREÇÃO VAGINAL PARA EXAME À FRESCO .CULTURA", sector: "Coleta", link: "https://docs.google.com/document/d/1I8ib-PaedW-bL7lGhMUPO-_6xaS4EEPl/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 23 - COLETA DE SECREÇÃO URETRAL OU PENIANA PARA CULTURA", sector: "Coleta", link: "https://docs.google.com/document/d/1BXPmBoM_v1GSUNIY0lfZ043zr3oClcuy/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 24 - COLETA DE OROFARINGE.CAVIDADE BUCAL PARA CULTURA", sector: "Coleta", link: "https://docs.google.com/document/d/1R0GfvFYn6HWLcjIeAtDNKo1cHE67B_Yf/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 25 - COLETA SANGUÍNEA – HEMOCULTURA", sector: "Coleta", link: "https://docs.google.com/document/d/1GNryi1oakeL4cnwakOC2zhVH5eb6kMBI/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 33 - ORIENTAÇÕES COLETA DE ESCARRO", sector: "Coleta", link: "https://docs.google.com/document/d/1bQEW3murgM2tL2tnPRfqPofOZut5K4Cv/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 34 - COLETA DE CITOLOGIA CÉRVICO-VAGINAL", sector: "Coleta", link: "https://docs.google.com/document/d/1fQ_SkuFwvSnjOuXC5NIPAjc_JBoX8dtf/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 35 - TESTE DE FRAGILIDADE CAPILAR (PROVA DO LAÇO)", sector: "Coleta", link: "https://docs.google.com/document/d/1QUEaAMSlhb1pDnNSKiU_3kLt9jI_J9zx/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 36 - ORIENTAÇÕES PARA COLETA DE URINA DE 24 HORAS. PROTEINA DE BENCE JONES .CLEARENCE DE CREATININA", sector: "Coleta", link: "https://docs.google.com/document/d/1km8XUasGgnmrpe1NDsD5lg-XxvSA5Wwd/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 37 - ORIENTAÇÕES COLETA DE URINA PARA DOSAGEM DE MICROALBUMINÚRIA", sector: "Coleta", link: "https://docs.google.com/document/d/1-2DoAbtYPvZ0odyHaXULen5trGY1PoNX/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 38 - ORIENTAÇÕES PARA COLETA TESTE DE PSA", sector: "Coleta", link: "https://docs.google.com/document/d/1IOYZhFWgj45Iaf4Fe8v8Td3_nmfJjymj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 39 - ORIENTAÇÕES PESQUISA DE BAAR EM ESPERMA .ESCARRO EXPECTORADO ESPONTÃNEO OU INDUZIDO .URINA", sector: "Coleta", link: "https://docs.google.com/document/d/1Y1pfhGxvq_jbIn8kFcDHYpYLa-chqZpi/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 234 - COLETA DE SECREÇÃO AURICULAR", sector: "Coleta", link: "https://docs.google.com/document/d/1u7mSw9JnB7W59Mo_MUwnnc3dxJjCSX7G/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 235 - COLETA DE SECREÇÃO OCULAR", sector: "Coleta", link: "https://docs.google.com/document/d/1JBnBf2lBN3KmNvV7LyIG3EhmHbb50wn6/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 236 - COLETA DE SECREÇÃO ANAL", sector: "Coleta", link: "https://docs.google.com/document/d/1NMH07mWRWAE8MgoZs47wjvZZ62IURGDv/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 238 - COLETA DE SECREÇÃO NASOFARÍNGEA", sector: "Coleta", link: "https://docs.google.com/document/d/1NbZ3YRNrda1UYD8FlDv6H-Ea_hR0oWqr/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 240 - PUNÇÃO LIQUÓRICA", sector: "Coleta", link: "https://docs.google.com/document/d/1Mn5tyLJC9u1tLcAzEA6Z0sVUNrYdjgWJ/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 241 - PUNÇÃO DE LÍQUIDO ASCÍTICO", sector: "Coleta", link: "https://docs.google.com/document/d/17dM08UidxP7-vK5Uoj8c3s4ACQEcUY9P/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 242 - DETERMINAÇÃO DA ATIVIDADE DA GALACTOCEREBROSIDADE - GALC", sector: "Coleta", link: "https://docs.google.com/document/d/1GSUvrYAqh5HpRERdH1TEN0FyU50Cnwvd/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 246 - COLETA DE SALIVA", sector: "Coleta", link: "https://docs.google.com/document/d/16ZEZr3dBfllBij_PwT6FTIwq2fJzeD6P/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 247 - COLETA DOMICILIAR NASOFARINGE PARA DIAGNÓSTICO MOLECULAR SARS-COV-2", sector: "Coleta", link: "https://docs.google.com/document/d/1mDIJze8OkGqHKN0Lw0FFrDQAzaMhpYJr/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 248 - POOL DE AMOSTRAS NASOFARINGE PARA DIAGNÓSTICO MOLECULAR SARS-COV-2", sector: "Coleta", link: "https://docs.google.com/document/d/1zg8_uCJtvXfdnDQ0nI0hC9IP8muvUt_p/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 249 - COLETA DE SWAB RETAL PARA PAINEL MOLECULAR IST11P", sector: "Coleta", link: "https://docs.google.com/document/d/1kmqFMmZgA86-cJGU36Dkx4q2MAOgEekz/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 250 - COLETA ARTERIAL PARA GASOMETRIA", sector: "Coleta", link: "https://docs.google.com/document/d/1MRMnNB9eYzAOw6CNqf7WyZ3DxopO7AcC/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 251 - COLETA DE URINA PARA PAINEL MOLECULAR IST11P", sector: "Coleta", link: "https://docs.google.com/document/d/1I58F4wjz2MhGYtrifzOGqzRBm7EZlcBo/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 252- INFLUENZA A E B, PESQUISA ANTIGÊNICA DETECÇÃO DA INFLUENZA A(H1N1, H3N2, H5N1)B", sector: "Coleta", link: "https://docs.google.com/document/d/1vI42B7hJkKs2dd3P6ay7jJQyK4FF0ZDU/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 253 - COLETA DE SWAB ENDOCERVICAL PARA PAINEL MOLECULAR IST11P", sector: "Coleta", link: "https://docs.google.com/document/d/19Bv_n2f5zNqF6cfx4ncK0cVnKHB1SVJK/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 254 - COLETA DE SWAB OROFARINGEAL PARA PAINEL MOLECULAR IST11P", sector: "Coleta", link: "https://docs.google.com/document/d/1L9YxVsIuexFxTRhBGh3h0TN52YcVCcSU/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 256 - COLETA DE SWAB ENDOCERVICAL PARA PAINEL MOLECULAR DE DETECÇÃO E GENOTIPAGEM PARA HPV (HPVGEN)", sector: "Coleta", link: "https://docs.google.com/document/d/1ODed4DITAhudJbWmjzfNyT40O026csat/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 257 - COLETA DE SWAB RETAL PARA PAINEL MOLECULAR DE DETECÇÃO E GENOTIPAGEM PARA HPV (HPVGEN)", sector: "Coleta", link: "https://docs.google.com/document/d/1itrwfcgQ1KDIBk_Mx9fAAjYAw27LZ095/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 258 - COLETA DE CITOLOGIA EM MEIO LÍQUIDO PARA PAINEL MOLECULAR HPVGEN", sector: "Coleta", link: "https://docs.google.com/document/d/1R-G09H3fqGYXvA13FFYFQ4abIJcPH7_6/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 259 - COLETA DE SWAB URETRAL PARA PAINEL MOLECULAR IST11P", sector: "Coleta", link: "https://docs.google.com/document/d/1CbhFlprJLbDaHUtj0ZwFZaOooXTClKGF/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 267 - ORIENTAÇÕES PARA COLETA EXAME DE HELICOBACTER PYLORI , PESQUISA DO ANTÍGENO NAS FEZES SERIADO", sector: "Coleta", link: "https://docs.google.com/document/d/1AQ5IK-kb0Q76rb_TRtjbrvyn7FyJYpII/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 270 - COLETA SWAB NASOFARINGEO PARA PAINEL RESPIRATÓRIO PARA DETECÇÃO DE 24 PATÓGENOS (PR24P)", sector: "Coleta", link: "https://docs.google.com/document/d/1IhkfdiDFlTp7foU2uIfGiTb3X7xCYDel/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 271 - COLETA SWAB NASOFARINGEO PARA PAINEL MOLECULAR DE 4 PATÓGENOS (PVR4P)", sector: "Coleta", link: "https://docs.google.com/document/d/1J2yMeVVbyTqfc-ICWjPcjfaYsUOVX4cE/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 272 - COLETA SWAB NASOFARINGEO PARA PAINEL MOLECULAR DE 4 ANTÍGENOS (PVR4A)", sector: "Coleta", link: "https://docs.google.com/document/d/1nCOtYRt6syYuie4FtDnpVwOgbrFKzLQq/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 273 - COLETA SWAB NASOFARINGEO PARA PESQUISA DE ANTÍGENOS DO SARS-COV-2 (COVIDRAG) - UNIDADES JUAZEIRO DO NORTE", sector: "Coleta", link: "https://docs.google.com/document/d/1iMrpqkt-UChcf3mcd--OQm_6A8PQE9rp/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 274 - COLETA SWAB NASOFARINGEO PARA PESQUISA DE ANTÍGENOS DO SARS-COV-2 (COVIDRAG) - UNIDADES 06, 12, E 13.", sector: "Coleta", link: "https://docs.google.com/document/d/1DSigDr_9hsHqCg2g99vVMlaPK-llMO8i/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 275 - COLETA SWAB NASOFARINGEO PARA PESQUISA DE ANTÍGENOS DE INFLUENZA A E/OU B (FLU-AG)", sector: "Coleta", link: "https://docs.google.com/document/d/15o7jr_BJqn4P_rGcHQ1NSHLyCwdxunSg/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 276 - COLETA SWAB NASOFARINGEO PARA PESQUISA DE ANTÍGENOS DO SARS-COV-2 E INFLUENZA A E/OU B (FLU-COV)", sector: "Coleta", link: "https://docs.google.com/document/d/1SPcSCYJqZWj5ZB3A6KQYTqB4g7hDuenX/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 313 - COLETA DE SWAB URETRAL PARA PAINEL MOLECULAR HPVGEN OU HPVPCR", sector: "Coleta", link: "https://docs.google.com/document/d/1wPc6PsH6QprlfGlXo3FNdTNfl3Nb0TNE/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 331 - COLETA DE EXAMES TOXICOLÓGICOS", sector: "Coleta", link: "https://docs.google.com/document/d/179JHnbpe8YqYtwCs0DLveZkQlKO2Dc-C/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 00 - ROTINA PARA LIMPEZA E DESINFECÇÃO DE SUPERFÍCIES", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1FCpev565a-Via7blBphsrdO5sTGto4uJ/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 01 - ROTINA PARA LIMPEZA DO SETOR DE COLETA", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1FF1Ue6jFhfs7XDbqS0h-z9iyf9w7PedS/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 02 - ROTINA PARA LIMPEZA E DESINFECÇÃO DE ESCADAS, CORREDORES OU ÁREAS ADMINISTRATIVAS FORA DOS SETORES DE ANÁLISE", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1nE3ez6E-kUwM5dtRz2-COnjj60LrHro3/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 03 - ROTINA DE LIMPEZA DOS BRINQUEDOS UTILIZADOS NA SALA DE COLETA E ÁREA INFANTIL", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1cysfgCU66lAicSiqt6q1u-p8iJXDyJeI/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 04 - PROCEDIMENTO DE LIMPEZA DO BANHEIRO", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1qSxx7JMHvJq6a5lk5QOoInb-biwWJvLt/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 05 - ROTINA DE HIGIENIZAÇÃO DE INSTALAÇÕES, EQUIPAMENTOS, MÓVEIS E UTENSÍLIOS", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1g38JjHbvy4t9_e98LBxEbEyUvAnqqroQ/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 06 - PROCEDIMENTO PARA O GERENCIAMENTO DOS RESÍDUOS DE SAÚDE, DAS AÇÕES DE MANIPULAÇÃO E DESTINO FINAL DOS MESMOS", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1MDLrCdrcShs5MfNxSxyZcIMvMgRbw-41/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 07 - TRANSPORTE DE RESÍDUOS DE SAÚDE DAS FILIAIS PARA A MATRIZ", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1T_Ep7jXVMQKDex0II5PjJ4HE-VwJmDfD/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 09 - HIGIENIZAÇÃO E ANTISSEPSIA DAS MÃOS", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1YIjJzsvW3qY1XuZ8dH7fgLvO1UijieZc/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 302 - TRANSPORTE DE MATERIAL BIOLÓGICO", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/11ICyKFnV00cy1ig8ifkVIQBw1xaBskN_/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 304 - DESCATE DE LIXO COMUM LABOTATÓRIO LAMIC", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1yq8gCqZ-bmcKc79daWvrhCU79d6_MftT/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 330 - ESTERILIZAÇÃO E TRANSPORTE DE MATERIAIS ESTERILIZADOS E CONTAMINADOS", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1T26zr9BtwXXjP4KvSoS3e8KvBSIdk5_0/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 335 - GESTÃO DA REDE FRIO E CONTROLE DE TEMPERATURA", sector: "Limpeza e Bio-Segurança", link: "https://docs.google.com/document/d/1ajmjeQixOzG8W9_JOERidMCIwVo8FUcxEGwH95aMnXQ/edit?usp=drive_link", forms: [] },
-            { title: "MANUAL DE BIOSSEGURANÇA", sector: "Manuais", link: "https://docs.google.com/document/d/1Ev68gN1DtoekPg57ZbrU5C9ph_3ebZ1E/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "MANUAL DE BOAS PRATICAS LABORATORIAIS", sector: "Manuais", link: "https://docs.google.com/document/d/1gyrDu0WF9ctrzHQYkBMPyk3ZsQbzI_bR/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 334 - TRATAMENTO E CONTROLE DE ESTOQUE", sector: "Almoxarifado", link: "https://docs.google.com/document/d/1iScfXhdM6BNxfPKln_ag5Ofqy4uB5fU4HF_s5ytmipk/edit?usp=drive_link", forms: [] },
-            { title: "POP 339 -  USO DA PLANILHA PARA CONTROLE DE ESTOQUE NAS UNIDADES", sector: "Almoxarifado", link: "https://docs.google.com/document/d/1f5ZGmUeMEZo3L7LhKVMPmnUz6bxyvWRLs39LJ1M52ug/edit?usp=drive_link", forms: [] },
-            { title: "POP 261 - APLICAÇÃO IMUNOBIOLÓGICOS FORMATADO LAMIC VACINAS", sector: "Vacinas", link: "https://docs.google.com/document/d/1iAIIzpABa8O8aoWCQ43aPCATUOXqQTD5/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 262 - REDE DE FRIO LAMIC VACINAS", sector: "Vacinas", link: "https://docs.google.com/document/d/1tRdslHFyxGCwWYrIISDJArpf5DPWI0on/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 263 - IMUNIZAÇÃO FORMATADO LAMIC VACINAS", sector: "Vacinas", link: "https://docs.google.com/document/d/10ddsVmoW25OGDNXPVLnhLxtyKqC6IQTv/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 264 - VACINAÇÃO EXTRA MURO, LAMIC VACINAS", sector: "Vacinas", link: "https://docs.google.com/document/d/11A5-x0jre1mD7ulPft925uC5FPMpaC8p/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 265 - PLANO DE SEGURANÇA DO PACIENTE NA APLICAÇÃO DE VACINAS", sector: "Vacinas", link: "https://docs.google.com/document/d/1j7H7stOkEN6P8noBjbuvPzOjREpyk72N/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 266 - ROTINA DE LIMPEZA E DESINFECÇÃO DA SALA DE VACINA", sector: "Vacinas", link: "https://docs.google.com/document/d/1jqVq6BgBGkHpMrFwRceLVM8S-WLYfBOX/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 337 - DESCARTE DE IMUNOBIOLÓGICOS", sector: "Vacinas", link: "https://docs.google.com/document/d/17OVbg9WEm9HG0QRz25WfRdUaOcxeDiDQtKOIsKHgBA4/edit?usp=drive_link", forms: [] },
-            { title: "POP 95~97 - CITOPATOLOGIA", sector: "Analítico", link: "https://docs.google.com/document/d/11QWqsoJxUcIDDeTlce05lfeYJWGV0hgG/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 333 -  ALTERAÇÃO DE ETIQUETAS NO SISTEMA UNILAB E CALIBRAÇÃO DA IMPRESSORA", sector: "T.I", link: "https://docs.google.com/document/d/1pbiWv26Z1m2qkVPXGVi6gubGvqlNlKPoZJVPex7-slA/edit?usp=drive_link", forms: [] },
-            { title: "POP 338 - EXPORTANDO CONVERSAS DO WHATSAPP", sector: "T.I", link: "https://docs.google.com/document/d/16gruFVXIGVlJ7xoUJar4V-LyFk4ro3ueZjMSaCoidro/edit?usp=drive_link", forms: [] },
-            { title: "POP 306 - LOTE PARA TRANSPORTE", sector: "Sistemas", link: "https://docs.google.com/document/d/156mxxTGS3K4YMJDqMTP3ExN2mi3Tj2Oj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 344 - PREENCHIMENTO DE PLANILHA - CONVERSÃO DE ORÇAMENTOS", sector: "Sistemas", link: "https://docs.google.com/document/d/1lddk-XUmtf6_EDk0t1mxU1UFtmySvPasNZO90dM-wQo/edit?usp=drive_link", forms: [] },
-            { title: "POP 345 - CRIAÇÃO DE EXAMES NO UNILAB", sector: "Sistemas", link: "https://docs.google.com/document/d/1y2foEuabEHGz49ZgaQkZS1dEd9WP4mGmE-KnsmfUl60/edit?usp=drive_link", forms: [] },
-            { title: "POP 40 - TRIAGEM E PROCESSAMENTO DE MATERIAIS", sector: "Triagem", link: "https://docs.google.com/document/d/1f_evhS127dv5pFlzDB5QBO3ZqgG0JYbp/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 41 - CADASTRO DE EXAMES NOS LABORATÓRIOS DE APOIO.HERMES PARDINI .DIAGNÓSTICO BRASIL", sector: "Triagem", link: "https://docs.google.com/document/d/1WkCYX34pi4rlWRbuykg5jxd1XGZFhqCh/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 42 - CADASTRO DE EXAMES EM LABORATÓRIOS DE APOIO.YATROS DIAGNOSIS", sector: "Triagem", link: "https://docs.google.com/document/d/1bWTxHG_ZxUS6CpmdUA59M3DNl-In9PRX/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 43 - CADASTRO DE EXAMES EM LABORATÓRIOS DE APOIO. INSITUS GENÉTICA", sector: "Triagem", link: "https://docs.google.com/document/d/15zXi_LwvLkB0ArCi5Ivm6Te_Ok7GRxoj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 243 - CROSSMATCH - PROVA CRUZADA PARA FERTILIDADE", sector: "Triagem", link: "https://docs.google.com/document/d/1kZVCOrNL1hdp0M8D1lBD1ssn_dte9EN-/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 244 - CROSSMATCH - PROVA CRUZADA PARA TRANSPLANTE", sector: "Triagem", link: "https://docs.google.com/document/d/1von-MPyB2gOnRheEDxFAnxvBy54EjGk4/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 297 - COMUNICAÇÃO DE PENDENCIAS", sector: "Triagem", link: "https://docs.google.com/document/d/1u9o0-I0zvFnC_Vb3VAJaadrMo9AYZJ8S/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 307 - CENTRIFUGAÇÃO DE AMOSTRAS BIOLÓGICAS", sector: "Triagem", link: "https://docs.google.com/document/d/1KlOSvOq4NJbtYMVSZrImXRXLr5hh1eQG/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 26 - COLETA DE AMOSTRAS PARA CULTURA DE FUNGOS", sector: "Coleta", link: "https://docs.google.com/document/d/1GPZ84hIhNIJjgFoglc_x-lZEV5MQWwxw/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 113~137 - MICROBIOLOGIA", sector: "Analítico", link: "https://docs.google.com/document/d/18jDQeRvbYGMMtppSk9EAKFM_iFyAHvvc/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 29 - ORIENTAÇÕES COLETA PARASITOLÓGICO DE FEZES.COPROLOGIA FUNCIONAL.PESQUISA DE LEUCÓCITOS FECAI. PESQUISA DE SUBSTÂNCIA REDUTORA", sector: "Coleta", link: "https://docs.google.com/document/d/1Y0RKH2jUYOW-tPIab4JL8b4tzXBl7y5p/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 30 - ORIENTAÇÕES COLETA PARASITOLÓGICO DE FEZES SERIADO (COM E SEM CONSERVANTE)", sector: "Coleta", link: "https://docs.google.com/document/d/1XtkBh57tUdSBKYsUx7GYT1L8RxhiXwtO/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 31 - ORIENTAÇÕES COLETA SANGUE OCULTO", sector: "Coleta", link: "https://docs.google.com/document/d/105Nm2bowLGw0BVJvRTZOAkKYgPKAiW7U/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 32 - ORIENTAÇÕES PESQUISA DE GORDURA FECAL", sector: "Coleta", link: "https://docs.google.com/document/d/1HNef6m46ZRZSLUhSNRkVt-0CKSyM58tO/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 245 - PARASITOLOGIA - PESQUISA DE ENTEROBIUS VERMICULARIS", sector: "Analítico", link: "https://docs.google.com/document/d/1X8er4VsXIe_y-GAkwnekntrzYrwIxNDE/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 98 ~110 + 112 - PARASITOLOGIA", sector: "Analítico", link: "https://docs.google.com/document/d/192e_h1XclyGLyltwc3y00EipmcKotiDl/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 28 - ORIENTAÇÕES COLETA SUMÁRIO DE URINA", sector: "Coleta", link: "https://docs.google.com/document/d/1YUxnNrRu1R7BEiL9GEemrBRlTs5wX-__/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 338 - FLUXOGRAMA DE URINA E FEZES", sector: "Coleta", link: "https://docs.google.com/document/d/1JjY_d-r45oEAPH9v3lkype6X5sbBQ9aWXnQh7_kQeMs/edit?usp=drive_link", forms: [] },
-            { title: "POP 347 - ROTINA UROANÁLISE", sector: "Analítico", link: "https://docs.google.com/document/d/17hdQk0ajplfO-ECYlFt6obyaSGOS4twoprZdlsZJIoQ/edit?usp=drive_link", forms: [] },
-            { title: "POP 44~94 + 237 - BIOQUIMICA", sector: "Analítico", link: "https://docs.google.com/document/d/1RIWqXJGpQEcnU9ZKmM3RSTTiCx3MIEMB/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 142~203 + 205 + 253 + 255~ 264 - IMUNOHORMONIOS", sector: "Analítico", link: "https://docs.google.com/document/d/1B9JmPrZ0eDrMLftBCEzFp5gHgrDiS8cj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 260 - IMUNOHORMÔNIOS", sector: "Analítico", link: "https://docs.google.com/document/d/1viH_w6FohHZJZAgxnChdFPGhzPE5F1xV/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 239 - FAN", sector: "Analítico", link: "https://docs.google.com/document/d/1QxKr1T_xvgpT220YgUZjF5_FlUbpG0i_/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 206 ~218 - HEMATOLOGIA", sector: "Analítico", link: "https://docs.google.com/document/d/15ydch7KX0YMijrM1EvM5pqCyU190ZsT_/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 219 - COAGULAÇÃO", sector: "Analítico", link: "https://docs.google.com/document/d/1pMtrGgVjv7zPagQhxBZZKwZ-OPMYqqtE/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 228 ~ 233- IMUNOHEMATOLOGIA", sector: "Analítico", link: "https://docs.google.com/document/d/15lYSij3suTE9QsfLmD72eNElarBbpQZ1/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 27 - ORIENTAÇÕES COLETA ESPERMOGRAMA", sector: "Coleta", link: "https://docs.google.com/document/d/1NgCDMKAGQCRwLeDu-ZSwRD29aLpmWnVU/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 204 - ESPERMOGRAMA", sector: "Analítico", link: "https://docs.google.com/document/d/1mnJokoccmqc9rIzSB2iczVBujR6z6h3j/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 342 - LÍQUIDOS CAVITÁRIOS", sector: "Analítico", link: "https://docs.google.com/document/d/1Zml9agiIFVtGr3ShzvEv6asP0W_JxfFftK4_77FzSrA/edit?usp=drive_link", forms: [] },
-            { title: "POP 283 - RT-qPCR Influenza A/B EM CFX96 REAL-TIME SYSTEM", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1cZd6jcrUeifVl_HHv-A0eLw9653atzvC/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 284 - RT-qPCR RSV EM CFX96 REAL-TIME SYSTEM", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1FgwtSo9mCqQUfoiN2ULXiah5e_thvX7c/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 285 - RT-qPCR PAINEL RESPIRATÓRIO PARA 4 PATÓGENOS (PVR4P) EM CFX96 REAL-TIME SYSTEM", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1OwOah6fdzHmd8ZqEtOXU_2lWMZx0ELot/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 286 - PAINEL RESPIRATÓRIO PARA DETECÇÃO DE 24 PATÓGENOS (PR24P)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1s6_ABekZfSJcc9ZzxwbDMXjDjO_Hyjdj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 287 - PAINEL PARA DETECÇÃO DE 11 PATÓGENOS QUE CAUSAM INFECÇÕES SEXUALMENTE TRANSMISSÍVEIS (IST11P)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1fYYPec2tx3oAkLMCf-nHjKxlNZZuCS7n/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 288 - PAINEL PARA DETECÇÃO E GENOTIPAGEM DE HPV DE ALTO E BAIXO RISCO (HPVGEN)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/19l24RDVZyBp5sObq8c-pTKy5myHc3UvS/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 289 - CONTROLE DE QUALIDADE INTERNO DA EXTRAÇÃO DE ÁCIDOS NUCLEICOS NO NANODROP LITE", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1YRuNp-skYO26XNd3a5EvFJi_DT1p8Zoa/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 290 - LIMPEZA DA CABINE DE FLUXO LAMINAR OU SEGURANÇA BIOLÓGICA", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/17u8T7PCjrx6JHPEQOdK_SdzPpDE1k1sR/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 291 - LIMPEZA DAS PEÇAS DO HYBRISPORT 24 (HS24)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1rc-5lkkhqXrOw-ql-wXthlFQkzI4ktAe/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 292 - LIMPEZA DIÁRIA DO HYBRISPOT 24 (HS24)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1AulpyKF-oguzvzuzlpYSHZTRtrOB2-jK/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 293 -  LIMPEZA MENSAL DO HYBRISPOT 24 (HS24)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1jCPDf6-eVEBrUKXItRs7CGqNVktUzXcj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 294 - TESTE DE LIBERAÇÃO RÁPIDA (TLR) PARA SARS-COV-2 (COVIDRAG)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1irDd8lX0AnOC3h6sAttT2V53W5yUhlBg/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 295 - TESTE DE LIBERAÇÃO RÁPIDA (TLR) PARA SARS-COV-2 E INFLUENZA A/B (FLU-COV)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1zU2pudlG3OkNnFvi1H6I2lQPPtW6f5fB/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 296 - TESTE DE LIBERAÇÃO RÁPIDA (TLR) PARA SARS-COV-2, INFLUENZA A/B E RSV (PVR4A)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1vaXFQU2HELHXPVVA7cCKgpyxi5lF9WhY/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 313 - RT-qPCR para HPV de Alto Risco (HPVPCR-A)", sector: "Biologia Molecular", link: "https://docs.google.com/document/d/1i7EJWNGSQmtMg-kLS45V_5qdaGlkIhX7/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 309 - TRATAMENTO DE DADOS PESSOAIS ", sector: "LGPD", link: "https://docs.google.com/document/d/1UU4uwUmEUhkzG-7fd8og6MaxlhwgKssu/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 310 - REQUISITOS E REVOGAÇÃO DO CONSENTIMENTO PARA O TRATAMENTO DE DADOS PESSOAIS", sector: "LGPD", link: "https://docs.google.com/document/d/1nise5A6l9VOQBON2my_VURRLxLTSmOiI/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 312 - TRANSPARÊNCIA E ACESSO DO TITULAR ÀS INFORMAÇÕES DE TRATAMENTO DE DADOS PESSOAIS ", sector: "LGPD", link: "https://docs.google.com/document/d/1YbTHSqDdF5CRn32YDVd-LXg_bTV8REps/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 313 - LEGÍTIMO INTERESSE COMO BASE PARA O TRATAMENTO DE DADOS PESSOAIS NA LGPD", sector: "LGPD", link: "https://docs.google.com/document/d/1tya187I7kLDB5vcgrpSj6zu-wuv0tN45/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 314 - CONDIÇÕES PARA O TRATAMENTO DE DADOS PESSOAIS SENSÍVEIS", sector: "LGPD", link: "https://docs.google.com/document/d/1GsAHm1IH_g_fjgixnIDeZVoeDMau90sA/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 315 - PROTEÇÃO DE DADOS SENSÍVEIS E REGULAMENTAÇÃO: O ARTIGO 11 DA LEI DE PROTEÇÃO DE DADOS", sector: "LGPD", link: "https://docs.google.com/document/d/1yRO8By9nmvt6nYwBoE1levQq-qnwgxVf/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 316 - TRATAMENTO DE DADOS ANONIMIZADOS E PERFIL COMPORTAMENTAL SOB A LEI DE PROTEÇÃO DE DADOS", sector: "LGPD", link: "https://docs.google.com/document/d/1I89t75lHHw3KF6UvoET33awGyVjtVpMF/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 317 - TRATAMENTO E SEGURANÇA DE DADOS PESSOAIS EM ESTUDOS DE SAÚDE PÚBLICA: ANONIMIZAÇÃO E PSEUDONIMIZAÇÃO GARANTIDAS", sector: "LGPD", link: "https://docs.google.com/document/d/1xL6BgOiW3z3BE9cRuXZ-iFfKYFpcyPVj/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 318 - PROTEÇÃO DE DADOS DE CRIANÇAS E ADOLESCENTES: TRATAMENTO EM SEU MELHOR INTERESSE E CONSENTIMENTO DOS PAIS", sector: "LGPD", link: "https://docs.google.com/document/d/1UFFUlUbxhkpT3p5RHhSDn8CtVMfsPAwh/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 319 - ENCERRAMENTO RESPONSÁVEL DO TRATAMENTO DE DADOS PESSOAIS SOB A LGPD", sector: "LGPD", link: "https://docs.google.com/document/d/1lMpYMBR67TYwOfIaw5OHwSS2qlvlMc-l/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 320 - PROTEÇÃO DA PRIVACIDADE E CONSERVAÇÃO DE DADOS PESSOAIS: O ARTIGO 16 DA LGPD E SEUS FUNDAMENTOS", sector: "LGPD", link: "https://docs.google.com/document/d/1hVOeLH5vMUb8Wu0rc7g6DUUp9K85RdBJ/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 321 - PROTEÇÃO DA PRIVACIDADE E CONSERVAÇÃO DE DADOS PESSOAIS: O ARTIGO 17 DA LGPD E SEUS FUNDAMENTOS", sector: "LGPD", link: "https://docs.google.com/document/d/1lkbrvACeF547AMZFCT7cfZUDtEvsoEuS/edit", forms: [] },
-            { title: "POP 322 - PRIVACIDADE E AUTODETERMINAÇÃO: OS FUNDAMENTOS TEÓRICOS DO ARTIGO 18 DA LGPD", sector: "LGPD", link: "https://docs.google.com/document/d/1emth87yuvUuypkFzLrfZMhrTxTtFsFgs/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 323 - PRINCÍPIOS FUNDAMENTAIS DO ACESSO A DADOS PESSOAIS - ANÁLISE DO ARTIGO 19", sector: "LGPD", link: "https://docs.google.com/document/d/1Du-y5lUb8mjY8wzrCglZhLXNg7ULs9wV/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 324 - O DIREITO DO TITULAR DE DADOS DE CONTESTAR DECISÕES AUTOMATIZADAS: TRANSPARÊNCIA E PROTEÇÃO DE INTERESSES", sector: "LGPD", link: "https://docs.google.com/document/d/1hm4GO1Z2VRWNRsoYmI5SimV7N7HmPcOb/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 325 - PROTEÇÃO DE DADOS NO EXERCÍCIO DE DIREITOS: PREVENÇÃO DE PREJUÍZO AO TITULAR", sector: "LGPD", link: "https://docs.google.com/document/d/165rrS8tukzazvsnAFBG4wDZ1ZAXTQ2Gf/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 326 - GARANTINDO A TUTELA DOS DIREITOS DOS TITULARES DE DADOS: ACESSO À JUSTIÇA E DEFESA DE INTERESSES", sector: "LGPD", link: "https://docs.google.com/document/d/1rP8V4Bfhi4YW2km3cLP1tBV4273UOu2t/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 327 - DIRETRIZES PARA O TRATAMENTO DE DADOS PESSOAIS POR ENTIDADES PÚBLICAS", sector: "LGPD", link: "https://docs.google.com/document/d/1LBcSLWn7izGg5GbciRt8v5oG8GXRo0DE/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 328 - PRINCÍPIOS DE IGUALDADE E REGULAÇÃO NO TRATAMENTO DE EMPRESAS PÚBLICAS E SOCIEDADES DE ECONOMIA MISTA NO BRASIL", sector: "LGPD", link: "https://docs.google.com/document/d/1ePlCSnK8fRtevQ9LIrBOvS9-ymGjJ0qy/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 329 - PROMOÇÃO DA TRANSPARÊNCIA E EFICIÊNCIA NA ADMINISTRAÇÃO PÚBLICA POR MEIO DA PADRONIZAÇÃO DE DADOS", sector: "LGPD", link: "https://docs.google.com/document/d/1yLAyzR7bYbC4r2VRMJsVQcdp80YnMrht/edit?usp=drive_link&ouid=111780347480586113555&rtpof=true&sd=true", forms: [] },
-            { title: "POP 311 - PLANO DE SEGURANÇA DO PACIENTE NA COLETA", sector: "Coleta", link: "https://docs.google.com/document/d/1JJG3GzGAvpE0Cjp2C8sdPu-5ttJuFfIVb3hEutJ7n_4/edit?usp=drive_link", forms: [] },
-
-        ];
-
-        // Initialize favorites from localStorage (namespaced to avoid cross-site duplication)
-        const FAVORITES_KEY = 'lamic_pops_favorites_v1';
-        let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || [];
-        if (!favorites.length) {
-            const legacyFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
-            if (legacyFavorites.length) {
-                favorites = legacyFavorites;
-                localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+        async function loadSpreadsheets() {
+            try {
+                const response = await fetch('https://api.jsonbin.io/v3/b/68dbbb3cd0ea881f4090475b', {
+                    headers: {
+                        'X-Master-Key': '$2a$10$2elKW8TT6o.K3V176efqwu7kOfD1PnS3D/F0s4Tczc3MYmaU.N1bi'
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch JSONBin data');
+                const data = await response.json();
+                spreadsheets = data.record || [];
+                spreadsheets.sort((a, b) => {
+                    if (a.sector < b.sector) return -1;
+                    if (a.sector > b.sector) return 1;
+                    if (a.title < b.title) return -1;
+                    if (a.title > b.title) return 1;
+                    return 0;
+                });
+                populateSectorDropdown();
+                renderCards();
+                updateCards();
+            } catch (error) {
+                console.error('Error loading JSONBin data:', error);
+                spreadsheets = [];
+                populateSectorDropdown();
+                renderCards();
             }
         }
-        let selectedSector = '';
-        let showFavorites = false;
 
-        // Sort spreadsheets by sector then by title
-        spreadsheets.sort((a, b) => {
-            if (a.sector < b.sector) return -1;
-            if (a.sector > b.sector) return 1;
-            if (a.title < b.title) return -1;
-            if (a.title > b.title) return 1;
-            return 0;
-        });
+        function populateSectorDropdown() {
+            const uniqueSectors = [...new Set(spreadsheets.map(sheet => sheet.sector))].sort();
+            const sectorDropdown = document.getElementById('sectorDropdown');
+            sectorDropdown.innerHTML = `<a href="#" class="block px-4 py-2 bg-blue-100 hover:bg-blue-200" onclick="filterBySector('')">Todos</a>`;
+            uniqueSectors.forEach(sector => {
+                const a = document.createElement('a');
+                a.href = '#';
+                a.className = 'block px-4 py-2 hover:bg-gray-100';
+                a.textContent = sector;
+                a.onclick = () => filterBySector(sector);
+                sectorDropdown.appendChild(a);
+            });
+        }
 
-        // Populate sector dropdown
-        const uniqueSectors = [...new Set(spreadsheets.map(sheet => sheet.sector))].sort();
-        const sectorDropdown = document.getElementById('sectorDropdown');
-        sectorDropdown.innerHTML = `<a href="#" class="block px-4 py-2 bg-blue-100 hover:bg-blue-200" onclick="filterBySector('')">Todos</a>`;
-        uniqueSectors.forEach(sector => {
-            const a = document.createElement('a');
-            a.href = '#';
-            a.className = 'block px-4 py-2 hover:bg-gray-100';
-            a.textContent = sector;
-            a.onclick = () => filterBySector(sector);
-            sectorDropdown.appendChild(a);
-        });
-
-        // Render cards
-        const spreadsheetList = document.getElementById('spreadsheetList');
-        spreadsheets.forEach((sheet, index) => {
-            const card = document.createElement('div');
-            card.className = 'card bg-white p-6 rounded-lg shadow-md';
-            card.dataset.sector = sheet.sector;
-            card.dataset.index = index;
-            const isFavorited = favorites.includes(index);
-            let formHtml = '';
-            if (sheet.forms && sheet.forms.length > 0) {
-                if (sheet.forms.length === 1) {
-                    formHtml = `<a href="${sheet.forms[0].link}" target="_blank" class="mt-4 form-button ml-4">Acessar Formulário</a>`;
-                } else {
-                    formHtml = `<div class="form-dropdown inline-block ml-4">
-                        <a href="#" class="mt-4 form-button">Acessar Formulário</a>
-                        <div class="form-dropdown-content rounded-lg">
-                            ${sheet.forms.map(form => `<a href="${form.link}" target="_blank" class="block px-4 py-2 hover:bg-gray-100">${form.title}</a>`).join('')}
-                        </div>
-                    </div>`;
+        function renderCards() {
+            const spreadsheetList = document.getElementById('spreadsheetList');
+            spreadsheetList.innerHTML = '';
+            spreadsheets.forEach((sheet, index) => {
+                const card = document.createElement('div');
+                card.className = 'card bg-white p-6 rounded-lg shadow-md';
+                card.dataset.sector = sheet.sector;
+                card.dataset.index = index;
+                const isFavorited = favorites.includes(index);
+                let formHtml = '';
+                if (sheet.forms && sheet.forms.length > 0) {
+                    if (sheet.forms.length === 1) {
+                        formHtml = `<a href="${sheet.forms[0].link}" target="_blank" class="mt-4 form-button ml-4">Acessar Formulário</a>`;
+                    } else {
+                        formHtml = `<div class="form-dropdown inline-block ml-4">
+                            <a href="#" class="mt-4 form-button">Acessar Formulário</a>
+                            <div class="form-dropdown-content rounded-lg">
+                                ${sheet.forms.map(form => `<a href="${form.link}" target="_blank" class="block px-4 py-2 hover:bg-gray-100">${form.title}</a>`).join('')}
+                            </div>
+                        </div>`;
+                    }
                 }
-            }
-            card.innerHTML = `
-                <span class="star ${isFavorited ? 'favorited' : ''}" onclick="toggleFavorite(${index})">&#9733;</span>
-                <h2 class="text-lg font-semibold text-blue-900">${sheet.title}</h2>
-                <p class="text-gray-600">POP: ${sheet.sector}</p>
-                <a href="#" onclick="openDoc(${index}); return false;" class="mt-4 modern-button">Acessar POP</a>
-                ${formHtml}
-            `;
-            spreadsheetList.appendChild(card);
-        });
+                let linkHtml = '';
+                if (sheet.links && sheet.links.length > 0) {
+                    if (sheet.links.length === 1 && !sheet.links[0].title) {
+                        linkHtml = `<a href="#" onclick="openDoc(${index}); return false;" class="mt-4 modern-button">Acessar POP</a>`;
+                    } else {
+                        linkHtml = `<div class="dropdown inline-block">
+                            <a href="#" class="mt-4 modern-button">Acessar POP</a>
+                            <div class="dropdown-content rounded-lg">
+                                ${sheet.links.map(link => `<a href="#" onclick="openDoc(${index}, '${link.link}'); return false;" class="block px-4 py-2 hover:bg-gray-100">${link.title || link.link}</a>`).join('')}
+                            </div>
+                        </div>`;
+                    }
+                }
+                card.innerHTML = `
+                    <span class="star ${isFavorited ? 'favorited' : ''}" onclick="toggleFavorite(${index})">&#9733;</span>
+                    <h2 class="text-lg font-semibold text-blue-900">${sheet.title}</h2>
+                    <p class="text-gray-600">POP: ${sheet.sector}</p>
+                    ${linkHtml}
+                    ${formHtml}
+                `;
+                spreadsheetList.appendChild(card);
+            });
+        }
 
-        // Toggle favorite status
         function toggleFavorite(index) {
             if (favorites.includes(index)) {
                 favorites = favorites.filter(fav => fav !== index);
@@ -542,7 +401,6 @@
             updateCards();
         }
 
-        // Update card display based on filters
         function updateCards() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.getElementsByClassName('card');
@@ -561,11 +419,9 @@
             });
         }
 
-        // Search input handler
         const searchInput = document.getElementById('searchInput');
         searchInput.addEventListener('input', updateCards);
 
-        // Sector filter handler
         function filterBySector(sector) {
             selectedSector = sector;
             showFavorites = false;
@@ -574,7 +430,6 @@
             updateCards();
         }
 
-        // Favorites filter handler
         function filterByFavorites() {
             showFavorites = !showFavorites;
             selectedSector = '';
@@ -584,11 +439,8 @@
             updateCards();
         }
 
-        // Initialize
-        updateCards();
-
-        // ===== Embedded Doc Viewer Logic =====
         let currentDocIndex = null;
+        let currentDocUrl = null;
 
         function extractDocIdFromUrl(url) {
             try {
@@ -600,27 +452,26 @@
         }
 
         function buildViewUrl(docId) {
-            // Preview mode is nicer for read-only embedding
             return `https://docs.google.com/document/d/${docId}/preview`;
         }
 
         function buildEditUrl(docId) {
-            // Attempt embedded edit (may be blocked by Google in some environments)
             return `https://docs.google.com/document/d/${docId}/edit?rm=embedded`;
         }
 
-        function openDoc(index, mode) {
+        function openDoc(index, specificLink = null) {
             currentDocIndex = index;
             const sheet = spreadsheets[index];
-            const docId = extractDocIdFromUrl(sheet.link);
+            const docUrl = specificLink || (sheet.links && sheet.links.length > 0 ? sheet.links[0].link : '');
+            currentDocUrl = docUrl;
+            const docId = extractDocIdFromUrl(docUrl);
             const iframe = document.getElementById('docFrame');
             const titleEl = document.getElementById('docTitle');
             titleEl.textContent = sheet.title || '';
             if (docId) {
-                iframe.src = mode === 'edit' ? buildEditUrl(docId) : buildViewUrl(docId);
+                iframe.src = buildViewUrl(docId);
             } else {
-                // Fallback: use original link
-                iframe.src = sheet.link;
+                iframe.src = docUrl;
             }
             document.getElementById('docOverlay').style.display = 'flex';
         }
@@ -629,33 +480,34 @@
             const overlay = document.getElementById('docOverlay');
             const iframe = document.getElementById('docFrame');
             overlay.style.display = 'none';
-            // Clear src to stop the doc from continuing to load/play
             iframe.src = '';
             currentDocIndex = null;
+            currentDocUrl = null;
         }
 
         function switchToEditMode() {
-            if (currentDocIndex == null) return;
-            const sheet = spreadsheets[currentDocIndex];
-            const docId = extractDocIdFromUrl(sheet.link);
+            if (currentDocIndex == null || !currentDocUrl) return;
+            const docId = extractDocIdFromUrl(currentDocUrl);
             const iframe = document.getElementById('docFrame');
             if (docId) {
                 iframe.src = buildEditUrl(docId);
             } else {
-                iframe.src = sheet.link;
+                iframe.src = currentDocUrl;
             }
         }
 
         function downloadDoc() {
-            if (currentDocIndex == null) return;
-            const sheet = spreadsheets[currentDocIndex];
-            const docId = extractDocIdFromUrl(sheet.link);
-            let exportUrl = sheet.link;
+            if (currentDocIndex == null || !currentDocUrl) return;
+            const docId = extractDocIdFromUrl(currentDocUrl);
+            let exportUrl = currentDocUrl;
             if (docId) {
                 exportUrl = `https://docs.google.com/document/d/${docId}/export?format=pdf`;
             }
             window.open(exportUrl, '_blank', 'noopener');
         }
+
+        // Initialize
+        loadSpreadsheets();
     </script>
 </body>
 </html>
