@@ -534,22 +534,19 @@
 
         .dropdown-content, .form-dropdown-content {
             display: none;
-            position: absolute;
+            position: fixed;
             background: white;
             min-width: 200px;
             box-shadow: 0 8px 28px rgba(0,0,0,0.12);
             border: 1px solid var(--border);
             border-radius: 10px;
-            z-index: 300;
-            top: calc(100% + 5px);
-            left: 0;
+            z-index: 9999;
             overflow: hidden;
             max-height: 220px;
             overflow-y: auto;
         }
 
-        .dropdown:hover .dropdown-content,
-        .form-dropdown:hover .form-dropdown-content {
+        .dropdown-content.active, .form-dropdown-content.active {
             display: block;
         }
 
@@ -990,6 +987,58 @@
             document.getElementById('topbarCount').textContent = spreadsheets.length;
         }
 
+        function positionDropdown(btn, contentEl) {
+            const rect = btn.getBoundingClientRect();
+            contentEl.style.position = 'fixed';
+            contentEl.style.zIndex = '9999';
+            contentEl.style.top = rect.bottom + 'px';
+            contentEl.style.left = rect.left + 'px';
+            contentEl.style.minWidth = rect.width + 'px';
+        }
+
+        function closeAllDropdowns(except) {
+            document.querySelectorAll('.dropdown-content.active, .form-dropdown-content.active').forEach(el => {
+                if (el !== except) el.classList.remove('active');
+            });
+        }
+
+        function setupDropdownListeners(card) {
+            if (card.dataset.fdBound === 'true') return;
+            card.dataset.fdBound = 'true';
+
+            const dropdownBtns = card.querySelectorAll('.dropdown > a, .form-dropdown > a');
+            dropdownBtns.forEach(btn => {
+                const container = btn.closest('.dropdown, .form-dropdown');
+                const content = container.querySelector('.dropdown-content, .form-dropdown-content');
+                btn._ddContent = content;
+
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const contentEl = btn._ddContent;
+
+                    if (contentEl.classList.contains('active')) {
+                        contentEl.classList.remove('active');
+                    } else {
+                        closeAllDropdowns(contentEl);
+                        document.body.appendChild(contentEl);
+                        positionDropdown(btn, contentEl);
+                        contentEl.classList.add('active');
+                    }
+                });
+
+                content.addEventListener('click', () => {
+                    content.classList.remove('active');
+                });
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-content') && !e.target.closest('.form-dropdown-content')) {
+                closeAllDropdowns(null);
+            }
+        });
+
         function renderCards() {
             const list = document.getElementById('spreadsheetList');
             list.innerHTML = '';
@@ -1058,6 +1107,7 @@
                     </div>
                 `;
                 list.appendChild(card);
+                setupDropdownListeners(card);
             });
         }
 
